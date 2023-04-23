@@ -1,10 +1,43 @@
+use std::sync::Arc;
+
+use diesel_async::{
+    pooled_connection::{self, deadpool::Pool},
+    AsyncPgConnection,
+};
+use error_stack::{IntoReport, ResultExt};
+
+use crate::errors::{self, EResult};
+
 pub mod postgre;
 pub(self) mod schema;
 
 pub trait State {}
 
 #[derive(Clone)]
-pub struct Storage {}
+pub struct Storage {
+    pg_pool: Arc<Pool<AsyncPgConnection>>,
+}
+
+impl Storage {
+    pub async fn new(config: Config) -> EResult<Self, errors::StorageError> {
+        let config = pooled_connection::AsyncDieselConnectionManager::<AsyncPgConnection>::new(
+            config.database_url,
+        );
+        let pool = Pool::builder(config).build().into_report().change_context(
+            errors::StorageError::ConfigurationError {
+                message: "Failed while building database pool",
+            },
+        )?;
+
+        Ok(Self {
+            pg_pool: Arc::new(pool),
+        })
+    }
+}
+
+pub struct Config {
+    pub database_url: String,
+}
 
 impl State for Storage {}
 
