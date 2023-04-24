@@ -13,7 +13,7 @@ impl super::UserRegistryInterface for PrimaryUserContract {
         state: web::Data<Self::AppState>,
         json_payload: web::Json<UserCreate>,
     ) -> HttpResponse {
-        HttpResponse::Ok().body("Bitch!")
+        HttpResponse::Ok().body("abc")
     }
     async fn subscribe_anime(
         state: web::Data<Self::AppState>,
