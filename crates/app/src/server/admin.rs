@@ -13,7 +13,7 @@ impl super::AnimeRegistryInterface for PrimaryAnimeContract {
         state: web::Data<Self::AppState>,
         json_payload: web::Json<AnimeCreate>,
     ) -> HttpResponse {
-        HttpResponse::Ok().body("Fuck you!")
+        HttpResponse::Ok().body("abc")
     }
 
     async fn update_anime(
@@ -27,12 +27,12 @@ impl super::AnimeRegistryInterface for PrimaryAnimeContract {
         state: web::Data<Self::AppState>,
         path: web::Path<String>,
     ) -> HttpResponse {
-        HttpResponse::Ok().body("You suck!")
+        HttpResponse::Ok().body("xyz")
     }
     async fn list_anime(
         state: web::Data<Self::AppState>,
         json_payload: web::Json<AnimeList>,
     ) -> HttpResponse {
-        HttpResponse::Ok().body("pussy")
+        HttpResponse::Ok().body("def")
     }
 }
