@@ -21,4 +21,3 @@ impl UserAnimeFollowingNew {
         Self { user_id, anime_id }
     }
 }
-

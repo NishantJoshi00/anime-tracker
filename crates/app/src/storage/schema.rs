@@ -29,8 +29,4 @@ diesel::table! {
     }
 }
 
-diesel::allow_tables_to_appear_in_same_query!(
-    animes,
-    user_followed_animes,
-    users,
-);
+diesel::allow_tables_to_appear_in_same_query!(animes, user_followed_animes, users,);

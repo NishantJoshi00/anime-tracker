@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use async_trait::async_trait;
 use diesel_async::{
     pooled_connection::{self, deadpool::Pool},
     AsyncPgConnection,
@@ -8,8 +9,9 @@ use error_stack::{IntoReport, ResultExt};
 
 use crate::errors::{self, EResult};
 
-pub mod postgre;
-pub(self) mod schema;
+pub mod db;
+pub(crate) mod schema;
+pub mod types;
 
 pub trait State {}
 
@@ -64,8 +66,80 @@ impl State for Storage {}
  *
  */
 
-trait UserInterface {}
-
 trait Tower {
-    type NextTarget;
+    type NextTarget: Tower;
+    fn next(&self) -> &Self::NextTarget;
 }
+
+impl Tower for () {
+    type NextTarget = ();
+    fn next(&self) -> &Self::NextTarget {
+        self
+    }
+}
+
+impl Tower for Storage {
+    type NextTarget = ();
+    fn next(&self) -> &Self::NextTarget {
+        &()
+    }
+}
+
+#[async_trait]
+trait UserInterface: Tower<NextTarget = Self::NextLayer> {
+    type NextLayer: UserInterface;
+    type Error;
+
+    async fn find_user_by_id(&self, id: String) -> EResult<types::users::User, Self::Error>;
+    async fn find_user_by_username(
+        &self,
+        username: String,
+    ) -> EResult<types::users::User, Self::Error>;
+    async fn find_user_by_email(&self, email: String) -> EResult<types::users::User, Self::Error>;
+
+    async fn add_new_user(
+        &self,
+        new: types::users::UserNew,
+    ) -> EResult<types::users::User, Self::Error>;
+
+    async fn update_user(
+        &self,
+        base: types::users::User,
+        update: types::users::UserUpdate,
+    ) -> EResult<types::users::User, Self::Error>;
+}
+
+#[async_trait]
+trait AnimeInterface: Tower<NextTarget = Self::NextLayer> {
+    type NextLayer: AnimeInterface;
+    type Error;
+
+    async fn find_anime_by_id(&self, id: String) -> EResult<types::animes::Anime, Self::Error>;
+    async fn find_anime_by_name(&self, name: String) -> EResult<types::animes::Anime, Self::Error>;
+    async fn add_new_anime(
+        &self,
+        new: types::animes::AnimeNew,
+    ) -> EResult<types::animes::Anime, Self::Error>;
+
+    async fn update_anime(
+        &self,
+        base: types::animes::Anime,
+        update: types::animes::AnimeUpdate,
+    ) -> EResult<types::animes::Anime, Self::Error>;
+}
+
+#[async_trait]
+trait AnimeUserRelInterface: Tower<NextTarget = Self::NextLayer> {
+    type NextLayer: AnimeUserRelInterface;
+    type Error;
+
+    async fn find_anime_ids_by_user_id(&self, id: String) -> EResult<Vec<String>, Self::Error>;
+    async fn create_relation(
+        &self,
+        user_id: String,
+        anime_id: String,
+    ) -> EResult<types::user_anime_rel::UserAnimeFollowing, Self::Error>;
+    async fn delete_relation(&self, user_id: String, anime_id: String) -> EResult<(), Self::Error>;
+}
+
+mod terminal;

@@ -6,12 +6,12 @@ use crate::utils;
 #[derive(Debug, Identifiable, Queryable)]
 #[diesel(table_name = schema::users)]
 pub struct User {
-    id: i32,
-    user_id: String,
-    username: String,
-    email: String,
-    authenticated: bool,
-    created_at: time::PrimitiveDateTime,
+    pub id: i32,
+    pub user_id: String,
+    pub username: String,
+    pub email: String,
+    pub authenticated: bool,
+    pub created_at: time::PrimitiveDateTime,
 }
 
 #[derive(Debug, Insertable)]
@@ -40,7 +40,7 @@ pub enum UserUpdate {
 
 #[derive(Debug, AsChangeset, Default)]
 #[diesel(table_name = schema::users)]
-struct PGUserUpdate {
+pub struct PGUserUpdate {
     username: Option<String>,
     email: Option<String>,
     authenticated: Option<bool>,
