@@ -7,11 +7,11 @@ use super::schema;
 #[derive(Debug, Identifiable, Queryable)]
 #[diesel(table_name = schema::animes)]
 pub struct Anime {
-    id: i32,
-    anime_id: String,
-    name: String,
-    tracking_data: Option<serde_json::Value>,
-    completed: bool,
+    pub id: i32,
+    pub anime_id: String,
+    pub name: String,
+    pub tracking_data: Option<serde_json::Value>,
+    pub completed: bool,
 }
 
 #[derive(Debug, Insertable)]
@@ -43,7 +43,7 @@ pub enum AnimeUpdate {
 
 #[derive(Debug, AsChangeset, Default)]
 #[diesel(table_name = schema::animes)]
-struct PGAnimeUpdate {
+pub(crate) struct PGAnimeUpdate {
     name: Option<String>,
     tracking_data: Option<Option<serde_json::Value>>,
     completed: Option<bool>,

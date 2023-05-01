@@ -15,12 +15,7 @@ impl UserInterface for Storage {
     type Error = errors::DatabaseError;
 
     async fn find_user_by_id(&self, id: String) -> EResult<types::users::User, Self::Error> {
-        let mut conn = self
-            .pg_pool
-            .get()
-            .await
-            .into_report()
-            .change_context(errors::DatabaseError::PoolClientFailure)?;
+        let mut conn = self.get_conn().await?;
 
         types::users::User::table()
             .filter(schema::users::dsl::user_id.eq(id))
@@ -33,12 +28,7 @@ impl UserInterface for Storage {
         &self,
         username: String,
     ) -> EResult<types::users::User, Self::Error> {
-        let mut conn = self
-            .pg_pool
-            .get()
-            .await
-            .into_report()
-            .change_context(errors::DatabaseError::PoolClientFailure)?;
+        let mut conn = self.get_conn().await?;
 
         types::users::User::table()
             .filter(schema::users::dsl::username.eq(username))
@@ -48,12 +38,7 @@ impl UserInterface for Storage {
             .change_context(errors::DatabaseError::FindQueryFailed)
     }
     async fn find_user_by_email(&self, email: String) -> EResult<types::users::User, Self::Error> {
-        let mut conn = self
-            .pg_pool
-            .get()
-            .await
-            .into_report()
-            .change_context(errors::DatabaseError::PoolClientFailure)?;
+        let mut conn = self.get_conn().await?;
 
         types::users::User::table()
             .filter(schema::users::dsl::email.eq(email))
@@ -67,12 +52,7 @@ impl UserInterface for Storage {
         &self,
         new: types::users::UserNew,
     ) -> EResult<types::users::User, Self::Error> {
-        let mut conn = self
-            .pg_pool
-            .get()
-            .await
-            .into_report()
-            .change_context(errors::DatabaseError::PoolClientFailure)?;
+        let mut conn = self.get_conn().await?;
 
         let query = diesel::insert_into(types::users::User::table()).values(new);
 
@@ -90,12 +70,7 @@ impl UserInterface for Storage {
     ) -> EResult<types::users::User, Self::Error> {
         let update: types::users::PGUserUpdate = update.into();
 
-        let mut conn = self
-            .pg_pool
-            .get()
-            .await
-            .into_report()
-            .change_context(errors::DatabaseError::PoolClientFailure)?;
+        let mut conn = self.get_conn().await?;
         let update_query = diesel::update(types::users::User::table())
             .filter(schema::users::id.eq(base.id))
             .set(update);

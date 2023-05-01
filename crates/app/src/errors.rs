@@ -16,6 +16,8 @@ pub enum DatabaseError {
     InsertFailed,
     #[error("Failed to update an entry")]
     UpdateFailed,
+    #[error("Failed to delete an entry")]
+    DeleteFailed,
 }
 
 #[derive(Debug, thiserror::Error)]

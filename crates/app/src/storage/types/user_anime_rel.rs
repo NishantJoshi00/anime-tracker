@@ -5,9 +5,9 @@ use super::schema;
 #[derive(Debug, Identifiable, Queryable)]
 #[diesel(table_name = schema::user_followed_animes)]
 pub struct UserAnimeFollowing {
-    id: i32,
-    user_id: String,
-    anime_id: String,
+    pub id: i32,
+    pub user_id: String,
+    pub anime_id: String,
 }
 
 #[derive(Debug, Insertable)]

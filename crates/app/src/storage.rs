@@ -2,7 +2,10 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use diesel_async::{
-    pooled_connection::{self, deadpool::Pool},
+    pooled_connection::{
+        self,
+        deadpool::{Object, Pool},
+    },
     AsyncPgConnection,
 };
 use error_stack::{IntoReport, ResultExt};
@@ -20,6 +23,8 @@ pub struct Storage {
     pg_pool: Arc<Pool<AsyncPgConnection>>,
 }
 
+type DeadPoolConnType = Object<AsyncPgConnection>;
+
 impl Storage {
     pub async fn new(config: Config) -> EResult<Self, errors::StorageError> {
         let config = pooled_connection::AsyncDieselConnectionManager::<AsyncPgConnection>::new(
@@ -34,6 +39,14 @@ impl Storage {
         Ok(Self {
             pg_pool: Arc::new(pool),
         })
+    }
+
+    pub async fn get_conn(&self) -> EResult<DeadPoolConnType, errors::DatabaseError> {
+        self.pg_pool
+            .get()
+            .await
+            .into_report()
+            .change_context(errors::DatabaseError::PoolClientFailure)
     }
 }
 
@@ -115,7 +128,10 @@ trait AnimeInterface: Tower<NextTarget = Self::NextLayer> {
     type Error;
 
     async fn find_anime_by_id(&self, id: String) -> EResult<types::animes::Anime, Self::Error>;
-    async fn find_anime_by_name(&self, name: String) -> EResult<types::animes::Anime, Self::Error>;
+    async fn find_anime_like_name(
+        &self,
+        name: String,
+    ) -> EResult<types::animes::Anime, Self::Error>;
     async fn add_new_anime(
         &self,
         new: types::animes::AnimeNew,
